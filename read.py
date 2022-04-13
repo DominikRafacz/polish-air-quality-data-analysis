@@ -4,8 +4,10 @@ from validation import *
 from utils import construct_file_name
 
 
-def _read_normalized_data(year: int, pollutant: str, exposition: int):
+def _read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexistent: str):
     file_name = construct_file_name(year, pollutant, exposition)
+
+    handle_file_existence(file_name, on_nonexistent)
 
     data = pd.read_excel(io=file_name, sheet_name=0, skiprows=[0, 2, 3, 4, 5]) \
         .rename(columns={'Kod stacji': 'timestamp'}) \
@@ -17,11 +19,11 @@ def _read_normalized_data(year: int, pollutant: str, exposition: int):
     return data
 
 
-def read_normalized_data(year: int, pollutant: str, exposition: int):
+def read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexistent: str = 'error'):
     validate_year(year)
     validate_pollutant(pollutant)
     validate_exposition(exposition)
-    return _read_normalized_data(year, pollutant, exposition)
+    return _read_normalized_data(year, pollutant, exposition, on_nonexistent)
 
 
 def read_stations_metadata():
@@ -43,12 +45,12 @@ def match_station_region(measurements_data: pd.DataFrame, stations_metadata: pd.
     return measurements_data.merge(stations_metadata, on='station_code')
 
 
-def _read_and_filter_multiple_datafiles(years, pollutants, expositions, regions, stations_metadata):
+def _read_and_filter_multiple_datafiles(years, pollutants, expositions, regions, stations_metadata, on_nonexistent):
     ret = []
     for year in years:
         for pollutant in pollutants:
             for exposition in expositions:
-                data = read_normalized_data(year, pollutant, exposition)
+                data = read_normalized_data(year, pollutant, exposition, on_nonexistent)
                 data = match_station_region(data, stations_metadata)
                 if regions is not None:
                     data = data[data['region'].isin(regions)]
@@ -57,13 +59,15 @@ def _read_and_filter_multiple_datafiles(years, pollutants, expositions, regions,
 
 
 def query_data_range(years: int | list[int], pollutants: str | list[str],
-                     expositions: int | list[int], regions: str | list[str] | None = None):
+                     expositions: int | list[int], regions: str | list[str] | None = None,
+                     on_nonexistent: str = 'message'):
     years = validate_and_wrap_multiple(years, validate_year, 'year', int)
     pollutants = validate_and_wrap_multiple(pollutants, validate_pollutant, 'pollutant', str)
     expositions = validate_and_wrap_multiple(expositions, validate_exposition, 'exposition', int)
     regions = validate_and_wrap_multiple(regions, validate_region, 'region', str, allow_none=True)
 
     stations_metadata = read_stations_metadata()
-    full_data = _read_and_filter_multiple_datafiles(years, pollutants, expositions, regions, stations_metadata)
+    full_data = _read_and_filter_multiple_datafiles(years, pollutants, expositions,
+                                                    regions, stations_metadata, on_nonexistent)
 
     return pd.concat(full_data)

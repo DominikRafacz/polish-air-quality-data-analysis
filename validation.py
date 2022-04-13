@@ -1,3 +1,5 @@
+from os import path
+
 from utils import remove_redundant
 
 POLLUTANTS = {
@@ -43,3 +45,11 @@ def validate_and_wrap_multiple(parameters, validation_function, parameter_name, 
     elif allow_none and parameters is None:
         return None
     raise TypeError(f'"{parameter_name}" has to be a list of values or a single value')
+
+
+def handle_file_existence(file_name, on_nonexistent):
+    if not path.exists(file_name):
+        if on_nonexistent == 'error':
+            raise ValueError(f'File "{file_name}" does not exists!')
+        elif on_nonexistent == 'message':
+            print(f'File "{file_name}" does not exists, skipping.')
