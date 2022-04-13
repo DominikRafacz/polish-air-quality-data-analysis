@@ -69,5 +69,4 @@ def query_data_range(years: int | list[int], pollutants: str | list[str],
     stations_metadata = read_stations_metadata()
     full_data = _read_and_filter_multiple_datafiles(years, pollutants, expositions,
                                                     regions, stations_metadata, on_nonexistent)
-
-    return pd.concat(full_data)
+    return pd.concat(full_data).reset_index(drop=True)
