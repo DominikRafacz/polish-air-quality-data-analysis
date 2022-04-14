@@ -4,14 +4,20 @@ from validation import *
 from utils import construct_file_name
 
 
+def _match_read_function(year: int):
+    skiprows = [1, 2] if year <= 2015 else [0, 2, 3, 4, 5]
+    decimal = ',' if 2016 <= year <= 2018 else '.'
+    return lambda io: pd.read_excel(io=io, sheet_name=0, skiprows=skiprows, decimal=decimal)
+
+
 def _read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexistent: str):
     file_name = construct_file_name(year, pollutant, exposition)
-
     handle_file_existence(file_name, on_nonexistent)
+    read_excel_function = _match_read_function(year)
 
-    data = pd.read_excel(io=file_name, sheet_name=0, skiprows=[0, 2, 3, 4, 5]) \
-        .rename(columns={'Kod stacji': 'timestamp'}) \
-        .melt(id_vars=['timestamp'], var_name='station_code', value_name='measurement')
+    data = read_excel_function(io=file_name)
+    data.columns.values[0] = 'timestamp'
+    data = data.melt(id_vars=['timestamp'], var_name='station_code', value_name='measurement')
 
     data['pollutant'] = pollutant
     data['exposition'] = exposition
