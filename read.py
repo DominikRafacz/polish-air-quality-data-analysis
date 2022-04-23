@@ -55,9 +55,22 @@ def read_stations_metadata():
     return data
 
 
-def match_station_region(measurements_data: pd.DataFrame, stations_metadata: pd.DataFrame):
+def _match_station_region(measurements_data: pd.DataFrame, stations_metadata: pd.DataFrame):
     stations_metadata = stations_metadata[['station_code', 'region']]
     return measurements_data.merge(stations_metadata, on='station_code')
+
+
+def _match_station_region_legacy(measurements_data: pd.DataFrame, stations_metadata: pd.DataFrame):
+    stations_metadata = stations_metadata[['station_code_legacy', 'region']]
+    stations_metadata = stations_metadata.rename(columns={'station_code_legacy': 'station_code'})
+    return measurements_data.merge(stations_metadata, on='station_code')
+
+
+def match_station_region(measurements_data: pd.DataFrame, stations_metadata: pd.DataFrame):
+    matched = _match_station_region(measurements_data, stations_metadata)
+    matched_legacy = _match_station_region_legacy(measurements_data, stations_metadata)
+    ret = pd.concat([matched, matched_legacy])
+    return ret[~ret.duplicated()]
 
 
 def _read_and_filter_multiple_datafiles(years, pollutants, expositions, regions, stations_metadata, on_nonexistent):
