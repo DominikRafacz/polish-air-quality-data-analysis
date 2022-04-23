@@ -3,7 +3,7 @@ from os import path
 from utils import remove_redundant
 
 POLLUTANTS = {
-    'NO2', 'NOx', 'SO2', 'CO', 'O3', 'PM10', 'PM25'
+    'NO2', 'NOx', 'SO2', 'CO', 'O3', 'PM10', 'PM2.5'
 }
 
 REGIONS = [
