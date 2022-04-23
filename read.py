@@ -33,7 +33,7 @@ def read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexist
 
 
 def read_stations_metadata():
-    data = pd.read_excel(io='data/Metadane - stacje i stanowiska pomiarowe.xlsx', sheet_name=0,
+    data = pd.read_excel(io='data/metadata.xlsx', sheet_name=0,
                          index_col=0, usecols='A,B,D:G,K,N,O')
     data.columns = ['station_code', 'station_name', 'station_code_legacy',
                     'active_since', 'active_until', 'region', 'latitude', 'longitude']
