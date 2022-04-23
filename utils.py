@@ -3,5 +3,7 @@ def remove_redundant(x: list):
 
 
 def construct_file_name(year: int, pollutant: str, exposition: int):
-    return f'data/{year}/{year}_{pollutant}_{exposition}g.xlsx'
-
+    if year == 2021:
+        return 'data/2021.xlsx'
+    else:
+        return f'data/{year}/{year}_{pollutant}_{exposition}g.xlsx'

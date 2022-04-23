@@ -4,17 +4,25 @@ from validation import *
 from utils import construct_file_name
 
 
-def _match_read_function(year: int):
-    skiprows = [1, 2] if year <= 2015 else [0, 2, 3, 4, 5]
+def _construct_2021_sheet_name(pollutant, exposition):
+    if pollutant == 'SO2' and exposition == 24:   #typo case
+        return '2021_SO2_24_H'
+    else:
+        return f'2021_{pollutant}_{exposition}H'
+
+
+def _match_read_function(year: int, pollutant: str, exposition: int):
+    skip_rows = [1, 2] if year <= 2015 else [0, 2, 3, 4, 5]
     decimal = ',' if 2016 <= year <= 2018 else '.'
-    return lambda io: pd.read_excel(io=io, sheet_name=0, skiprows=skiprows, decimal=decimal)
+    sheet_name = 0 if year < 2021 else _construct_2021_sheet_name(pollutant, exposition)
+    return lambda io: pd.read_excel(io=io, sheet_name=sheet_name, skiprows=skip_rows, decimal=decimal)
 
 
 def _read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexistent: str):
     file_name = construct_file_name(year, pollutant, exposition)
     if handle_file_existence(file_name, on_nonexistent) is not None:
         return None
-    read_excel_function = _match_read_function(year)
+    read_excel_function = _match_read_function(year, pollutant, exposition)
 
     data = read_excel_function(io=file_name)
     data.columns.values[0] = 'timestamp'
