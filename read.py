@@ -12,7 +12,8 @@ def _match_read_function(year: int):
 
 def _read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexistent: str):
     file_name = construct_file_name(year, pollutant, exposition)
-    handle_file_existence(file_name, on_nonexistent)
+    if handle_file_existence(file_name, on_nonexistent) is not None:
+        return None
     read_excel_function = _match_read_function(year)
 
     data = read_excel_function(io=file_name)
@@ -57,6 +58,8 @@ def _read_and_filter_multiple_datafiles(years, pollutants, expositions, regions,
         for pollutant in pollutants:
             for exposition in expositions:
                 data = read_normalized_data(year, pollutant, exposition, on_nonexistent)
+                if data is None:
+                    continue
                 data = match_station_region(data, stations_metadata)
                 if regions is not None:
                     data = data[data['region'].isin(regions)]

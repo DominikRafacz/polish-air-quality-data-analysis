@@ -53,3 +53,5 @@ def handle_file_existence(file_name, on_nonexistent):
             raise ValueError(f'File "{file_name}" does not exists!')
         elif on_nonexistent == 'message':
             print(f'File "{file_name}" does not exists, skipping.')
+            return 'skip'
+    return None
