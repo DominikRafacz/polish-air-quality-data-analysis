@@ -6,9 +6,6 @@ import pmdarima as pmd
 from pmdarima.preprocessing import BoxCoxEndogTransformer
 from pmdarima.pipeline import Pipeline
 
-
-
-
 import utils
 
 
@@ -67,7 +64,6 @@ def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False):
     pred, conf_int = model.predict_in_sample(start=data_test.index[0], end=data_test.index[-1], return_conf_int=True)
     lower, upper = transform_confidences(conf_int)
 
-    data_test_ret = data_test.copy()
     data_test.loc[:, 'prediction'] = pred
     data_test.loc[:, 'lower_confidence'] = lower
     data_test.loc[:, 'upper_confidence'] = upper
