@@ -21,10 +21,9 @@ def get_period_length(granularity: str) -> int:
         return 12
 
 
-def generate_ticks(data: pd.DataFrame, granularity: str) -> ([int], [int]):
+def generate_ticks(data: pd.DataFrame) -> ([int], [int]):
     start_year = data.year.min()
     end_year = data.year.max()
-    period_len = get_period_length(granularity)
-    ticks = [period_len * i for i in range(0, end_year - start_year + 2)]
+    ticks = [*data[~data['year'].duplicated()].index, len(data)]
     tick_labels = list(range(start_year, end_year + 2))
     return ticks, tick_labels
