@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from functools import wraps
 
 # source: https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pitayasmoothie-dark.mplstyle
+from utils import generate_ticks
+
 DEFAULT_THEME = 'pitayasmoothie-dark.mplstyle'
 DEFAULT_RC_PARAMS = {
     'figure.dpi': 300,
@@ -42,5 +44,22 @@ def plot_map_with_pollutions(geo_data_with_measurements, title, **kwargs):
     ax.set_title(title)
     ax.set_xticks([])
     ax.set_yticks([])
+
+    return fig, ax
+
+
+@with_theme_and_params
+def plot_timeline_of_pollution(data, pollution, granularity):
+    fig, ax = plt.subplots()
+
+    ax.plot(data.measurement)
+
+    ax.set_title(f'{pollution} pollution in Poland averaged {granularity}')
+    ax.set_xlabel('Time')
+    ax.set_ylabel(f'Average concentration of {pollution} in the air [μg/m³]')
+
+    ticks, tick_labels = generate_ticks(data, granularity)
+    ax.set_xticks(ticks)
+    ax.set_xticklabels(tick_labels)
 
     return fig, ax
