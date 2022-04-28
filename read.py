@@ -1,4 +1,5 @@
 import pandas as pd
+import geopandas as gpd
 
 from validation import *
 from utils import construct_file_name
@@ -100,3 +101,12 @@ def query_data_range(years: int | list[int], pollutants: str | list[str],
     full_data = _read_and_filter_multiple_datafiles(years, pollutants, expositions,
                                                     regions, stations_metadata, on_nonexistent)
     return pd.concat(full_data).reset_index(drop=True)
+
+
+def get_geo_data():
+    geo_data = gpd.read_file('data/Wojew¢dztwa.shp')
+    geo_data['region'] = ['SLASKIE', 'OPOLSKIE', 'SWIETOKRZYSKIE', 'POMORSKIE', 'PODLASKIE', 'ZACHODNIOPOMORSKIE',
+                          'DOLNOSLASKIE', 'WIELKOPOLSKIE', 'PODKARPACKIE', 'MALOPOLSKIE', 'WARMINSKO-MAZURSKIE',
+                          'LODZKIE', 'MAZOWIECKIE', 'KUJAWSKO-POMORSKIE', 'LUBELSKIE', 'LUBUSKIE']
+    geo_data = geo_data[['geometry', 'region']]
+    return geo_data
