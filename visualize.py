@@ -61,3 +61,31 @@ def plot_timeline_of_pollution(data, pollution, granularity):
     ax.set_xticks(*generate_ticks(data))
 
     return fig, ax
+
+
+@with_theme_and_params
+def plot_decomposition_of_pollution(decomposition, data, pollution, granularity):
+    fig, axs = plt.subplots(2, 2, sharey=True)
+
+    ticks, tick_labels = generate_ticks(data)
+
+    ax_top = plt.subplot(2, 1, 1)
+    ax_top.plot(decomposition.observed)
+    ax_top.plot(decomposition.trend)
+    ax_top.set_xticks(ticks, tick_labels)
+    ax_top.set_title(f'Trend of the measurements of {pollution} in Poland, averaged {granularity}')
+    ax_top.set_ylabel(f'{pollution} in the air [μg/m³]')
+    ax_top.legend(['Measurements', 'Overall trend'])
+
+    axs[1][0].plot(decomposition.seasonal)
+
+    axs[1][1].scatter(decomposition.resid.index, decomposition.resid)
+
+    for index, title in zip([0, 1], ['Seasonal trend of measurements', 'Residuals']):
+        axs[1][index].axhline(color="white")
+        axs[1][index].set_xticks(ticks, tick_labels)
+        axs[1][index].set_title(title)
+
+    axs[1][0].set_ylabel('Difference [μg/m³]')
+
+    return fig, axs
