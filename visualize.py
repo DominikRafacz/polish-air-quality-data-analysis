@@ -58,8 +58,6 @@ def plot_timeline_of_pollution(data, pollution, granularity):
     ax.set_xlabel('Time')
     ax.set_ylabel(f'Average concentration of {pollution} in the air [μg/m³]')
 
-    ticks, tick_labels = generate_ticks(data)
-    ax.set_xticks(ticks)
-    ax.set_xticklabels(tick_labels)
+    ax.set_xticks(*generate_ticks(data))
 
     return fig, ax
