@@ -27,3 +27,7 @@ def generate_ticks(data: pd.DataFrame) -> ([int], [int]):
     ticks = [*data[~data['year'].duplicated()].index, len(data)]
     tick_labels = list(range(start_year, end_year + 2))
     return ticks, tick_labels
+
+
+def unpack_to_dict(names, values):
+    return {name: value for name, value in zip(names, values)}
