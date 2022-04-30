@@ -54,7 +54,7 @@ def plot_map_with_pollutions(geo_data_with_measurements, title, **kwargs):
 
 
 @with_theme_and_params
-def plot_timeline_of_pollution(data, pollution, granularity):
+def plot_timeline_of_pollution(data, pollution, granularity, **kwargs):
     fig, ax = plt.subplots()
 
     ax.plot(data.measurement)
@@ -69,7 +69,7 @@ def plot_timeline_of_pollution(data, pollution, granularity):
 
 
 @with_theme_and_params
-def plot_decomposition_of_pollution(decomposition, data, pollution, granularity):
+def plot_decomposition_of_pollution(decomposition, data, pollution, granularity, **kwargs):
     fig, axs = plt.subplots(2, 2, sharey=True)
 
     ticks, tick_labels = generate_ticks(data)
