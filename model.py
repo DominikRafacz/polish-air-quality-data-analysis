@@ -42,12 +42,9 @@ def transform_confidences(confidences: np.ndarray):
     return [row[0] for row in confidences], [row[1] for row in confidences]
 
 
-def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False):
+def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False, ret_decomposition: bool = False):
     period_len = utils.get_period_length(granularity)
     data = group_and_reindex(data, granularity)
-
-    decomposition = seasonal_decompose(data.measurement, period=period_len)
-
     data_train, data_test = train_test_split_on_year(data)
 
     if transform:
@@ -67,4 +64,9 @@ def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False):
     data_test.loc[:, 'prediction'] = pred
     data_test.loc[:, 'lower_confidence'] = lower
     data_test.loc[:, 'upper_confidence'] = upper
-    return decomposition, model, data_train, data_test
+
+    if ret_decomposition:
+        return model, data_train, data_test, seasonal_decompose(data.measurement, period=period_len)
+    else:
+        return model, data_train, data_test
+
