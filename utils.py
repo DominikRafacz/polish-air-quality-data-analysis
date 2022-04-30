@@ -13,12 +13,14 @@ def construct_file_name(year: int, pollutant: str, exposition: int):
 
 
 def get_period_length(granularity: str) -> int:
-    if granularity == 'daily':
-        return 365
-    elif granularity == 'weekly':
-        return 52
-    elif granularity == 'monthly':
-        return 12
+    match = {'daily': 365, 'weekly': 52, 'monthly': 12}
+    return match[granularity]
+
+
+def get_period_label(granularity: str, uppercase: bool = False) -> str:
+    match = {'daily': 'Day', 'weekly': 'Week', 'monthly': 'Month'} if uppercase \
+        else {'daily': 'day', 'weekly': 'week', 'monthly': 'month'}
+    return match[granularity]
 
 
 def generate_ticks(data: pd.DataFrame) -> ([int], [int]):
