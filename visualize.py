@@ -22,8 +22,13 @@ def with_theme_and_params(plotting_func):
     def wrapper(*args, **kwargs):
         theme = kwargs['theme'] if 'theme' in kwargs else DEFAULT_THEME
         rc_params = kwargs['rc_params'] if 'rc_params' in kwargs else DEFAULT_RC_PARAMS
+        show = kwargs['show'] if 'show' in kwargs else True
         with plt.style.context(theme), plt.rc_context(rc_params):
-            return plotting_func(*args, **kwargs)
+            ret = plotting_func(*args, **kwargs)
+            if show:
+                plt.show()
+            else:
+                return ret
     return wrapper
 
 
