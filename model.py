@@ -38,8 +38,22 @@ def train_test_split_on_year(data: pd.DataFrame, year: int = 2020):
     return data[data.year < year].copy(), data[data.year >= year].copy()
 
 
-def transform_confidences(confidences: np.ndarray):
+def transpose_confidences(confidences: np.ndarray):
     return [row[0] for row in confidences], [row[1] for row in confidences]
+
+
+def auto_transform(data_train, data_test):
+    transformer = BoxCoxEndogTransformer(lmbda2=1e-6)
+
+    trans_train, _ = transformer.fit_transform(data_train.measurement)
+    ret_train = data_train.copy()
+    ret_train['measurement_transformed'] = trans_train
+
+    trans_test, _ = transformer.transform(data_test.measurement)
+    ret_test = data_test.copy()
+    ret_test['measurement_transformed'] = trans_test
+
+    return transformer, ret_train, ret_test
 
 
 def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False, ret_decomposition: bool = False):
@@ -48,18 +62,25 @@ def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False, re
     data_train, data_test = train_test_split_on_year(data)
 
     if transform:
-        model = Pipeline([
-            ('boxcox', BoxCoxEndogTransformer(lmbda2=1e-6)),
-            ('arima', pmd.AutoARIMA(trace=True,
-                                    suppress_warnings=True,
-                                    m=period_len))
-        ])
-        model.fit(data_train.measurement)
+        transformer, data_train_trans, data_test_trans = auto_transform(data_train, data_test)
+        model = pmd.auto_arima(data_train_trans.measurement_transformed, m=period_len, trace=True, suppress_warnings=True)
+        pred_trans, conf_int_trans = model.predict_in_sample(start=data_test.index[0], end=data_test.index[-1], return_conf_int=True)
+        lower_trans, upper_trans = transpose_confidences(conf_int_trans)
+
+        pred, lower, upper = (transformer.inverse_transform(values)[0] for values in [pred_trans, lower_trans, upper_trans])
+
+        data_train.loc[:, 'measurement_transformed'] = data_train_trans.measurement_transformed
+        data_test.loc[:, 'measurement_transformed'] = data_test_trans.measurement_transformed
+        data_test.loc[:, 'prediction_transformed'] = pred_trans
+        data_test.loc[:, 'lower_confidence_transformed'] = lower_trans
+        data_test.loc[:, 'upper_confidence_transformed'] = upper_trans
+
+        model = {'transformer': transformer, 'model': model}
     else:
         model = pmd.auto_arima(data_train.measurement, m=period_len, trace=True, suppress_warnings=True)
 
-    pred, conf_int = model.predict_in_sample(start=data_test.index[0], end=data_test.index[-1], return_conf_int=True)
-    lower, upper = transform_confidences(conf_int)
+        pred, conf_int = model.predict_in_sample(start=data_test.index[0], end=data_test.index[-1], return_conf_int=True)
+        lower, upper = transpose_confidences(conf_int)
 
     data_test.loc[:, 'prediction'] = pred
     data_test.loc[:, 'lower_confidence'] = lower
