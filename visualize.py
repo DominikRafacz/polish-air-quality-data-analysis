@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 from functools import wraps
 
 # source: https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pitayasmoothie-dark.mplstyle
+import pandas as pd
+
 from utils import generate_ticks
 
 DEFAULT_THEME = 'pitayasmoothie-dark.mplstyle'
@@ -94,3 +96,21 @@ def plot_decomposition_of_pollution(decomposition, data, pollution, granularity,
     axs[1][0].set_ylabel('Difference [μg/m³]')
 
     return fig, axs
+
+
+@with_theme_and_params
+def plot_historical_and_predictions(model_results, pollution, granularity, **kwargs):
+    fig, ax = plt.subplots()
+
+    ax.plot(pd.concat([model_results['df_train'].measurement, model_results['df_test'].measurement]))
+    ax.plot(model_results['df_test'].index, model_results['df_test'].prediction, linestyle='dashed')
+    ax.fill_between(model_results['df_test'].index, model_results['df_test'].lower_confidence,
+                    model_results['df_test'].upper_confidence, color='gray', alpha=0.2)
+    ax.legend(['Historical data', '2020 and 2021 predictions', 'Confidence interval'])
+    ax.set_title(f'Comparison of historical {granularity} data to trend prediction for {pollution} in Poland')
+    ax.set_ylabel(f'Average concentration of {pollution} in the air [μg/m³]')
+    ax.set_xlabel(f'Time')
+    ax.set_xticks(*generate_ticks(pd.concat([model_results['df_train'][['year']], model_results['df_test'][['year']]])))
+
+    return fig, ax
+
