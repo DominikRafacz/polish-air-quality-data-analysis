@@ -1,11 +1,12 @@
 import matplotlib.pyplot as plt
+import pandas as pd
+import pmdarima as pmd
+
+from utils import generate_ticks, get_period_label, get_period_length
 from functools import wraps
 
+
 # source: https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pitayasmoothie-dark.mplstyle
-import pandas as pd
-
-from utils import generate_ticks
-
 DEFAULT_THEME = 'pitayasmoothie-dark.mplstyle'
 DEFAULT_RC_PARAMS = {
     'figure.dpi': 300,
@@ -114,3 +115,20 @@ def plot_historical_and_predictions(model_results, pollution, granularity, **kwa
 
     return fig, ax
 
+
+@with_theme_and_params
+def plot_acf_and_frequency(data, pollution, granularity, transformed=False, **kwargs):
+    fig = pmd.utils.tsdisplay(data.measurement_transformed if transformed else data.measurement,
+                              show=False, lag_max=get_period_length(granularity))
+    axs = fig.axes
+    axs[0].set_title(f'Average {pollution} pollution in Poland averaged {granularity} {", transformed with Box-Cox" if transformed else ""}')
+    axs[0].set_xticks(*generate_ticks(data))
+    axs[0].set_ylabel(f'{"Transformed m" if transformed else "M"}easurement value')
+    axs[1].set_title('Autocorrelation function')
+    axs[1].set_xlabel(f'{get_period_label(granularity, uppercase=True)} lag')
+    axs[1].set_ylabel('Autocorrelation value')
+    axs[2].set_title('Frequency of specific values')
+    axs[2].set_ylabel('Number of occurences')
+    axs[2].set_xlabel(f'Value of {"transformed " if transformed else " "}measurement')
+
+    return fig, axs
