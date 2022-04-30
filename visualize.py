@@ -4,6 +4,7 @@ import pmdarima as pmd
 
 from utils import generate_ticks, get_period_label, get_period_length
 from functools import wraps
+from matplotlib import gridspec
 
 
 # source: https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pitayasmoothie-dark.mplstyle
@@ -132,3 +133,49 @@ def plot_acf_and_frequency(data, pollution, granularity, transformed=False, **kw
     axs[2].set_xlabel(f'Value of {"transformed " if transformed else " "}measurement')
 
     return fig, axs
+
+
+@with_theme_and_params
+def plot_full_pre_model_analysis(data_train, data_test, decomposition, pollution, granularity, transformed: bool, **kwargs):
+    fig = plt.figure()
+    gs = gridspec.GridSpec(3, 2)
+    ax_top = fig.add_subplot(gs[0, 0:])
+    ax_sea = fig.add_subplot(gs[1, 0])
+    ax_res = fig.add_subplot(gs[1, 1], sharey=ax_sea)
+    ax_acf = fig.add_subplot(gs[2, 0])
+    ax_his = fig.add_subplot(gs[2, 1])
+
+    var_name = 'measurement_transformed' if transformed else 'measurement'
+
+    all_data = pd.concat([data_train[['year', var_name]],
+                          data_test[['year', var_name]]])
+
+    ax_top.plot(all_data[var_name])
+    ax_top.plot(decomposition.trend)
+    ax_top.set_xticks(*generate_ticks(all_data))
+    ax_top.axvline(len(data_train), zorder=-1)
+    ax_top.set_title(f'Trend of the measurements of {pollution} in Poland, averaged {granularity}')
+    ax_top.set_ylabel('Transformed value')
+    ax_top.legend([f'Measurements{"transformed " if transformed else ""}', 'Overall trend'])
+
+    ax_sea.plot(decomposition.seasonal)
+
+    ax_res.scatter(decomposition.resid.index, decomposition.resid)
+
+    for ax, title in zip([ax_sea, ax_res], ['Seasonal trend of values', 'Residuals']):
+        ax.axhline(zorder=-1)
+        ax.set_xticks(*generate_ticks(data_train))
+        ax.set_title(title)
+        ax.set_ylabel('Value')
+
+    pmd.utils.plot_acf(data_train[var_name], ax=ax_acf, show=False,
+                       title='Autocorrelation function', lags=get_period_length(granularity))
+    ax_acf.set_xlabel(f'{get_period_label(granularity, uppercase=True)} lag')
+    ax_acf.set_ylabel('Autocorrelation value')
+
+    ax_his.hist(data_train[var_name], bins=25)
+    ax_his.set_title('Frequency of specific values')
+    ax_his.set_ylabel('Number of occurences')
+    ax_his.set_xlabel(f'Value of {"transformed " if transformed else ""}measurement')
+
+    fig.set_tight_layout(True)
