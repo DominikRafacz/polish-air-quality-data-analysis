@@ -15,6 +15,11 @@ DEFAULT_RC_PARAMS = {
 }
 
 
+def get_theme_colors(theme=DEFAULT_THEME):
+    with plt.style.context(theme):
+        return plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+
 def with_theme_and_params(plotting_func):
     """
     Decorator for wrapping function with plotting context
