@@ -9,6 +9,8 @@ def construct_file_name(year: int, pollutant: str, exposition: int):
     if year == 2021:
         return 'data/2021.xlsx'
     else:
+        if pollutant == 'PM2.5' and (year == 2015 or year >= 2017):
+            pollutant = 'PM25'
         return f'data/{year}/{year}_{pollutant}_{exposition}g.xlsx'
 
 
