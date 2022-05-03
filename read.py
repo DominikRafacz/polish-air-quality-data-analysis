@@ -110,3 +110,15 @@ def get_geo_data():
                           'LODZKIE', 'MAZOWIECKIE', 'KUJAWSKO-POMORSKIE', 'LUBELSKIE', 'LUBUSKIE']
     geo_data = geo_data[['geometry', 'region']]
     return geo_data
+
+
+def get_mobility_data():
+    df = pd.read_csv("data/mobility_trend_2022_04_10.csv")
+    df = df[df.region == "Poland"].T.iloc[6:] - 100  # set the 100 as the baseline, and convert data relative to it
+    df = df.reset_index()  # reset index
+    df.columns = ["date", "mobility_driving", "mobility_walking"]  # rename columns
+    df['date'] = pd.to_datetime(df['date'])
+    df['day'] = df.date.dt.day
+    df['month'] = df.date.dt.month
+    df['year'] = df.date.dt.year
+    return df
