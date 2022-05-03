@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pmdarima as pmd
 
-import model
 from utils import generate_ticks, get_period_label, get_period_length
 from functools import wraps
 from matplotlib import gridspec
@@ -245,4 +244,24 @@ def plot_mobility_data(data, **kwargs):
                         'Apr 2021', 'Jul 2021', 'Oct 2021', 'Jan 2022',
                         'Apr 2022'])
     ax.legend(['Driving', 'Walking'])
+    return fig, ax
+
+
+@with_theme_and_params
+def plot_comparison_of_regions(model_results_dict, regions, region_labels, pollution, granularity, **kwargs):
+    fig, axs = plt.subplots(len(regions), 1, sharex=True)
+
+    for ax, region in zip(axs, regions):
+        data_full = pd.concat([model_results_dict[region]['df_train'][['measurement', 'year']],
+                               model_results_dict[region]['df_test'][['measurement', 'year']]])
+        data_test = model_results_dict[region]['df_test']
+
+        ax.plot(data_full.measurement)
+        ax.plot(data_test.prediction, linestyle='dashed')
+        ax.fill_between(data_test.index, data_test.lower_confidence, data_test.upper_confidence,
+                       color='gray', alpha=0.2)
+        ax.set_title(region_labels[region])
+        ax.set_xticks(*generate_ticks(data_full))
+
+    fig.suptitle(f'Comparison of {pollution} in regions')
     return fig, ax
