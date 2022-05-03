@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pmdarima as pmd
 
+import model
 from utils import generate_ticks, get_period_label, get_period_length
 from functools import wraps
 from matplotlib import gridspec
-
 
 # source: https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pitayasmoothie-dark.mplstyle
 DEFAULT_THEME = 'pitayasmoothie-dark.mplstyle'
@@ -27,6 +27,7 @@ def with_theme_and_params(plotting_func):
     :param plotting_func: Plotting function to be wrapped with default rc_params and default theme
     :return: Wrapped function.
     """
+
     @wraps(plotting_func)
     def wrapper(*args, **kwargs):
         theme = kwargs['theme'] if 'theme' in kwargs else DEFAULT_THEME
@@ -38,6 +39,7 @@ def with_theme_and_params(plotting_func):
                 plt.show()
             else:
                 return ret
+
     return wrapper
 
 
@@ -123,11 +125,43 @@ def plot_historical_and_predictions(model_results, pollution, granularity, **kwa
 
 
 @with_theme_and_params
+def plot_historical_and_predictions_and_mobility(model_results, mobility_data, pollution, granularity, **kwargs):
+    fig, axs = plt.subplots(3, 1, sharex=True)
+
+    df_test_joined = model_results['df_test'].merge(mobility_data, on=['year', 'month'], how='left')
+
+    axs[0].plot(df_test_joined.measurement)
+    axs[0].plot(df_test_joined.index, df_test_joined.prediction, linestyle='dashed')
+    axs[0].fill_between(df_test_joined.index, df_test_joined.lower_confidence,
+                        df_test_joined.upper_confidence, color='gray', alpha=0.2)
+    axs[0].legend(['Historical data', '2020 and 2021 predictions', 'Confidence interval'])
+    axs[0].set_title(f'Comparison of historical {granularity} data to trend prediction for {pollution} in Poland')
+    axs[0].set_ylabel(f'{pollution} in the air [μg/m³]')
+
+    axs[1].plot(df_test_joined.measurement_transformed - df_test_joined.prediction_transformed)
+    axs[1].axhline(zorder=-1)
+    axs[1].set_title('Difference between measurement and predicted value')
+
+    axs[2].plot(df_test_joined.mobility_driving)
+    axs[2].plot(df_test_joined.mobility_walking)
+    axs[2].axhline(zorder=-1)
+    axs[2].set_title('Mobility of people with Apple devices in Poland')
+    axs[2].set_ylabel('Mobility relative to previous time periods [%]')
+    axs[2].legend(['Driving', 'Walking'])
+
+    axs[2].set_xlabel(f'Time')
+    axs[2].set_xticks(range(0, 24, 3),  ['2020 Jan', 'Apr', 'Jul', 'Oct', '2021 Jan', 'Apr', 'Jul', 'Oct'])
+
+    return fig, axs
+
+
+@with_theme_and_params
 def plot_acf_and_frequency(data, pollution, granularity, transformed=False, **kwargs):
     fig = pmd.utils.tsdisplay(data.measurement_transformed if transformed else data.measurement,
                               show=False, lag_max=get_period_length(granularity))
     axs = fig.axes
-    axs[0].set_title(f'Average {pollution} pollution in Poland averaged {granularity} {", transformed with Box-Cox" if transformed else ""}')
+    axs[0].set_title(
+        f'Average {pollution} pollution in Poland averaged {granularity} {", transformed with Box-Cox" if transformed else ""}')
     axs[0].set_xticks(*generate_ticks(data))
     axs[0].set_ylabel(f'{"Transformed m" if transformed else "M"}easurement value')
     axs[1].set_title('Autocorrelation function')
@@ -141,7 +175,8 @@ def plot_acf_and_frequency(data, pollution, granularity, transformed=False, **kw
 
 
 @with_theme_and_params
-def plot_full_pre_model_analysis(data_train, data_test, decomposition, pollution, granularity, transformed: bool, **kwargs):
+def plot_full_pre_model_analysis(data_train, data_test, decomposition, pollution, granularity, transformed: bool,
+                                 **kwargs):
     fig = plt.figure()
     gs = gridspec.GridSpec(3, 2)
     ax_top = fig.add_subplot(gs[0, 0:])
@@ -184,7 +219,7 @@ def plot_full_pre_model_analysis(data_train, data_test, decomposition, pollution
     ax_his.set_xlabel(f'Value of {"transformed " if transformed else ""}measurement')
 
     fig.set_tight_layout(True)
-    return fig, axs
+    return fig, gs
 
 
 @with_theme_and_params
