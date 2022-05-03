@@ -91,3 +91,17 @@ def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False, re
     else:
         return model, data_train, data_test
 
+
+def calc_diffs(data, transformed=None, years=(2020, 2021)):
+    if transformed or (transformed is None and 'measurement_transformed' in data.columns):
+        var_mes, var_pre = 'measurement_transformed', 'prediction_transformed'
+    else:
+        var_mes, var_pre = 'measurement', 'prediction'
+    return data[data.year.isin(years)][var_mes] - data[data.year.isin(years)][var_pre]
+
+
+def calc_rmse(diff, split_pos_neg=False):
+    if split_pos_neg:
+        return np.sqrt(np.square(diff[diff > 0]).mean()), np.sqrt(np.square(diff[diff < 0]).mean())
+    else:
+        return np.sqrt(np.square(diff).mean())
