@@ -156,7 +156,7 @@ def plot_full_pre_model_analysis(data_train, data_test, decomposition, pollution
     ax_top.axvline(len(data_train), zorder=-1)
     ax_top.set_title(f'Trend of the measurements of {pollution} in Poland, averaged {granularity}')
     ax_top.set_ylabel('Transformed value')
-    ax_top.legend([f'Measurements{"transformed " if transformed else ""}', 'Overall trend'])
+    ax_top.legend([f'Measurements{" transformed " if transformed else ""}', 'Overall trend'])
 
     ax_sea.plot(decomposition.seasonal)
 
