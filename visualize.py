@@ -184,3 +184,30 @@ def plot_full_pre_model_analysis(data_train, data_test, decomposition, pollution
     ax_his.set_xlabel(f'Value of {"transformed " if transformed else ""}measurement')
 
     fig.set_tight_layout(True)
+    return fig, axs
+
+
+@with_theme_and_params
+def plot_mobility_data(data, **kwargs):
+    dates = ['2020-01-13', '2020-04-01', '2020-07-01', '2020-10-01',
+             '2021-01-01', '2021-04-01', '2021-07-01', '2021-10-01',
+             '2022-01-01', '2022-04-10']
+    indices = [None] * 10
+
+    for i, date in enumerate(dates):
+        temp_df = data[data.date == date]
+        indices[i] = temp_df.index[0]
+
+    fig, ax = plt.subplots()
+    ax.plot(data.mobility_driving)
+    ax.plot(data.mobility_walking)
+
+    ax.set_title('Relative mobility of Apple devices users in Poland')
+    ax.set_xlabel('Date')
+    ax.set_ylabel('Mobility relative to previous time periods [%]')
+    ax.set_xticks(indices)
+    ax.set_xticklabels(['Jan 2020', 'Apr 2020', 'Jul 2020', 'Oct 2020', 'Jan 2021',
+                        'Apr 2021', 'Jul 2021', 'Oct 2021', 'Jan 2022',
+                        'Apr 2022'])
+    ax.legend(['Driving', 'Walking'])
+    return fig, ax
