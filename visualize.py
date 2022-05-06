@@ -81,6 +81,23 @@ def plot_timeline_of_pollution(data, pollution, granularity, **kwargs):
 
 
 @with_theme_and_params
+def plot_timeline_of_pollution_for_regions(regional_data, regions, focus_region_colors, pollution, **kwargs):
+    fig, ax = plt.subplots()
+
+    for region in regions:
+        data = regional_data[region]
+        data = data[data.year < 2020]
+        ax.plot(data.measurement, color=focus_region_colors[region])
+
+    ax.set_title(f'{pollution} pollution in Poland split by regions')
+    ax.set_xlabel('Time')
+    ax.set_xticks(*generate_ticks(data))
+    ax.set_ylabel(f'Average concentration of {pollution} in the air [μg/m³]')
+
+    plt.show()
+
+
+@with_theme_and_params
 def plot_decomposition_of_pollution(decomposition, data, pollution, granularity, **kwargs):
     fig, axs = plt.subplots(2, 2, sharey=True)
 
