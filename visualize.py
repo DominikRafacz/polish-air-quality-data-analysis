@@ -5,6 +5,8 @@ import pmdarima as pmd
 from utils import generate_ticks, get_period_label, get_period_length
 from functools import wraps
 from matplotlib import gridspec
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 
 # source: https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pitayasmoothie-dark.mplstyle
 DEFAULT_THEME = 'pitayasmoothie-dark.mplstyle'
@@ -149,7 +151,7 @@ def plot_historical_and_predictions_and_mobility(model_results, mobility_data, p
     axs[2].legend(['Driving', 'Walking'])
 
     axs[2].set_xlabel(f'Time')
-    axs[2].set_xticks(range(0, 24, 3),  ['2020 Jan', 'Apr', 'Jul', 'Oct', '2021 Jan', 'Apr', 'Jul', 'Oct'])
+    axs[2].set_xticks(range(0, 24, 3), ['2020 Jan', 'Apr', 'Jul', 'Oct', '2021 Jan', 'Apr', 'Jul', 'Oct'])
 
     return fig, axs
 
@@ -248,20 +250,55 @@ def plot_mobility_data(data, **kwargs):
 
 
 @with_theme_and_params
-def plot_comparison_of_regions(model_results_dict, regions, region_labels, pollution, granularity, **kwargs):
-    fig, axs = plt.subplots(len(regions), 1, sharex=True)
+def plot_comparison_of_regions(model_results_dict, regions, region_labels, pollution, region_colors=None,
+                               one_panel=False, data_start=2019, **kwargs):
+    data_historical = dict()
+    for region in regions:
+        data = pd.concat([model_results_dict[region]['df_train'][['measurement', 'year']],
+                          model_results_dict[region]['df_test'][['measurement', 'year']]])
+        data_historical[region] = data[data.year >= data_start]
 
-    for ax, region in zip(axs, regions):
-        data_full = pd.concat([model_results_dict[region]['df_train'][['measurement', 'year']],
-                               model_results_dict[region]['df_test'][['measurement', 'year']]])
-        data_test = model_results_dict[region]['df_test']
+    data_test = {region: model_results_dict[region]['df_test'] for region in regions}
 
-        ax.plot(data_full.measurement)
-        ax.plot(data_test.prediction, linestyle='dashed')
-        ax.fill_between(data_test.index, data_test.lower_confidence, data_test.upper_confidence,
-                       color='gray', alpha=0.2)
-        ax.set_title(region_labels[region])
-        ax.set_xticks(*generate_ticks(data_full))
+    if one_panel:
+        fig, ax = plt.subplots(1, 1)
 
-    fig.suptitle(f'Comparison of {pollution} in regions')
-    return fig, ax
+        for region in regions:
+            ax.plot(data_historical[region].measurement, color=region_colors[region])
+            ax.plot(data_test[region].prediction, linestyle='dashed', color=region_colors[region], alpha=0.5)
+
+            ax.set_title(f'Comparison of {pollution} pollution historical data and predictions in different regions')
+            ax.set_xticks(*generate_ticks(data_historical[region]))
+            ax.legend(handles=[Line2D([], [], color='gray', marker='', label='Historical data'),
+                               Line2D([], [], color='gray', marker='', label='Prediction', alpha=0.5,
+                                      linestyle='dashed')])
+
+        ax.set_xticks(*generate_ticks(data_historical[regions[0]]))
+
+        return fig, ax
+    else:
+        fig, axs = plt.subplots(len(regions), 1, sharex=True)
+
+        for ax, region in zip(axs, regions):
+            if region_colors is None:
+                ax.plot(data_historical[region].measurement)
+                ax.plot(data_test[region].prediction, linestyle='dashed')
+            else:
+                ax.plot(data_historical[region].measurement, color=region_colors[region])
+                ax.plot(data_test[region].prediction, linestyle='dashed', color=region_colors[region], alpha=0.5)
+            ax.fill_between(data_test[region].index, data_test[region].lower_confidence,
+                            data_test[region].upper_confidence, color='gray', alpha=0.2)
+            ax.set_title(region_labels[region])
+        axs[0].set_xticks(*generate_ticks(data_historical[regions[0]]))
+
+        if region_colors is None:
+            axs[0].legend(['Historical data', 'Prediction', 'Confidence intervals'])
+        else:
+            axs[0].legend(handles=[Line2D([], [], color='gray', marker='', label='Historical data'),
+                                   Line2D([], [], color='gray', marker='', label='Prediction', alpha=0.5,
+                                          linestyle='dashed'),
+                                   Patch(edgecolor='gray', facecolor='gray', alpha=0.2, label='Confidence intervals')])
+
+        fig.suptitle(f'Comparison of {pollution} pollution historical data and predictions in different regions')
+
+        return fig, axs
