@@ -111,7 +111,7 @@ def get_geo_data():
     geo_data['region'] = ['SLASKIE', 'OPOLSKIE', 'SWIETOKRZYSKIE', 'POMORSKIE', 'PODLASKIE', 'ZACHODNIOPOMORSKIE',
                           'DOLNOSLASKIE', 'WIELKOPOLSKIE', 'PODKARPACKIE', 'MALOPOLSKIE', 'WARMINSKO-MAZURSKIE',
                           'LODZKIE', 'MAZOWIECKIE', 'KUJAWSKO-POMORSKIE', 'LUBELSKIE', 'LUBUSKIE']
-    geo_data = geo_data[['geometry', 'region']]
+    geo_data = geo_data[['geometry', 'region']].to_crs('EPSG:4326')
     return geo_data
 
 
