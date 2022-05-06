@@ -30,6 +30,9 @@ def _read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexis
     data.columns.values[0] = 'timestamp'
     data = data.melt(id_vars=['timestamp'], var_name='station_code', value_name='measurement')
 
+    if pollutant == 'CO':
+        data['measurement'] = data['measurement'] * 1000
+
     data['pollutant'] = pollutant
     data['exposition'] = exposition
 
