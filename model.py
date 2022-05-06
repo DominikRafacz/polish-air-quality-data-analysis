@@ -56,14 +56,14 @@ def auto_transform(data_train, data_test):
     return transformer, ret_train, ret_test
 
 
-def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False, ret_decomposition: bool = False):
+def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False, ret_decomposition: bool = False, verbose: bool = False):
     period_len = utils.get_period_length(granularity)
     data = group_and_reindex(data, granularity)
     data_train, data_test = train_test_split_on_year(data)
 
     if transform:
         transformer, data_train_trans, data_test_trans = auto_transform(data_train, data_test)
-        model = pmd.auto_arima(data_train_trans.measurement_transformed, m=period_len, trace=True, suppress_warnings=True)
+        model = pmd.auto_arima(data_train_trans.measurement_transformed, m=period_len, trace=verbose, suppress_warnings=True)
         pred_trans, conf_int_trans = model.predict_in_sample(start=data_test.index[0], end=data_test.index[-1], return_conf_int=True)
         lower_trans, upper_trans = transpose_confidences(conf_int_trans)
 
@@ -77,7 +77,7 @@ def auto_model(data: pd.DataFrame, granularity: str, transform: bool = False, re
 
         model = {'transformer': transformer, 'model': model}
     else:
-        model = pmd.auto_arima(data_train.measurement, m=period_len, trace=True, suppress_warnings=True)
+        model = pmd.auto_arima(data_train.measurement, m=period_len, trace=verbose, suppress_warnings=True)
 
         pred, conf_int = model.predict_in_sample(start=data_test.index[0], end=data_test.index[-1], return_conf_int=True)
         lower, upper = transpose_confidences(conf_int)
