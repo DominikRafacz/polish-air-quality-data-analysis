@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import geopandas as gpd
 
@@ -53,6 +54,8 @@ def read_stations_metadata():
                     'WARMIŃSKO-MAZURSKIE', 'WIELKOPOLSKIE', 'ZACHODNIOPOMORSKIE'],
         value=REGIONS
     )
+    data['longitude'] = data['longitude'].replace(-999.0, np.NaN)
+    data['latitude'] = data['latitude'].replace(-999.0, np.NaN)
     return data
 
 
