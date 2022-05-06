@@ -28,7 +28,7 @@ def get_period_label(granularity: str, uppercase: bool = False) -> str:
 def generate_ticks(data: pd.DataFrame) -> ([int], [int]):
     start_year = data.year.min()
     end_year = data.year.max()
-    ticks = [*data[~data['year'].duplicated()].index, len(data)]
+    ticks = [*data[~data['year'].duplicated()].index, data.index[-1]]
     tick_labels = list(range(start_year, end_year + 2))
     return ticks, tick_labels
 
