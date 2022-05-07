@@ -148,6 +148,8 @@ def plot_historical_and_predictions_and_mobility(model_results, mobility_data, p
 
     df_test_joined = model_results['df_test'].merge(mobility_data, on=['year', 'month'], how='left')
 
+    colors = get_theme_colors()
+
     axs[0].plot(df_test_joined.measurement)
     axs[0].plot(df_test_joined.index, df_test_joined.prediction, linestyle='dashed')
     axs[0].fill_between(df_test_joined.index, df_test_joined.lower_confidence,
@@ -156,9 +158,10 @@ def plot_historical_and_predictions_and_mobility(model_results, mobility_data, p
     axs[0].set_title(f'Comparison of historical {granularity} data to trend prediction for {pollution} in Poland')
     axs[0].set_ylabel(f'{pollution} in the air [μg/m³]')
 
-    axs[1].plot(df_test_joined.measurement_transformed - df_test_joined.prediction_transformed)
+    axs[1].plot(df_test_joined.measurement_transformed - df_test_joined.prediction_transformed, color=colors[2])
     axs[1].axhline(zorder=-1)
     axs[1].set_title('Difference between measurement and predicted value')
+    axs[1].legend(['Difference value'])
 
     axs[2].plot(df_test_joined.mobility_driving)
     axs[2].plot(df_test_joined.mobility_walking)
