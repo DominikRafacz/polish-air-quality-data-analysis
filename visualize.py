@@ -45,22 +45,22 @@ def with_theme_and_params(plotting_func):
 
 
 @with_theme_and_params
-def plot_map_with_pollutions(geo_data_with_measurements, title, **kwargs):
+def plot_map_with_values(geo_data_with_values, values_column: str, title: str, **kwargs):
     """
-    Function for plotting map with pollutions
+    Function for plotting map with continuous values
 
-    :param geo_data_with_measurements: GeoDataFrame with columns 'geometry' and 'measurement'
+    :param geo_data_with_values: GeoDataFrame with columns 'geometry' and column of name the same as 'values_column'
+        parameter
+    :param values_column: Name of the column containing values to plot
     :param title: Title of the plot
     :param kwargs: used by wrappers
     :return: tuple (figure object, axes object)
     """
     fig, ax = plt.subplots()
 
-    geo_data_with_measurements.plot(column='measurement', legend=True, ax=ax)
+    geo_data_with_values.plot(column=values_column, legend=True, ax=ax)
 
     ax.set_title(title)
-    ax.set_xticks([])
-    ax.set_yticks([])
 
     return fig, ax
 
