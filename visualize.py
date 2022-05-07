@@ -135,7 +135,7 @@ def plot_historical_and_predictions(model_results, pollution, granularity, **kwa
                     model_results['df_test'].upper_confidence, color='gray', alpha=0.2)
     ax.legend(['Historical data', '2020 and 2021 predictions', 'Confidence interval'])
     ax.set_title(f'Comparison of historical {granularity} data to trend prediction for {pollution} in Poland')
-    ax.set_ylabel(f'Average concentration of {pollution} in the air [μg/m³]')
+    ax.set_ylabel(f'Average {pollution} in the air [μg/m³]')
     ax.set_xlabel(f'Time')
     ax.set_xticks(*generate_ticks(pd.concat([model_results['df_train'][['year']], model_results['df_test'][['year']]])))
 
