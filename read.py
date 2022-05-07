@@ -123,6 +123,7 @@ def get_mobility_data():
     df = df[df.region == "Poland"].T.iloc[6:] - 100  # set the 100 as the baseline, and convert data relative to it
     df = df.reset_index()  # reset index
     df.columns = ["date", "mobility_driving", "mobility_walking"]  # rename columns
+    df = df.ffill()
     df['date'] = pd.to_datetime(df['date'])
     df['day'] = df.date.dt.day
     df['month'] = df.date.dt.month
