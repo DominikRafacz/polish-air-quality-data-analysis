@@ -1,0 +1,10 @@
+
+data/**/*.xlsx
+
+__pycache__/
+
+.idea/
+
+.ipynb_checkpoints/
+
+source_notebooks/
