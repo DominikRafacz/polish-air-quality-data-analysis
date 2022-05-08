@@ -7,6 +7,7 @@ from functools import wraps
 from matplotlib import gridspec
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from numpy import corrcoef
 
 # source: https://github.com/dhaitz/matplotlib-stylesheets/raw/master/pitayasmoothie-dark.mplstyle
 DEFAULT_THEME = 'pitayasmoothie-dark.mplstyle'
@@ -150,6 +151,13 @@ def plot_historical_and_predictions_and_mobility(model_results, mobility_data, p
 
     colors = get_theme_colors()
 
+    corr = {
+        var: corrcoef(
+        model_results['df_test'].measurement_transformed - model_results['df_test'].prediction_transformed,
+        mobility_data[mobility_data.year.isin([2020, 2021])][var]
+        )[0, 1] for var in ['mobility_driving', 'mobility_walking']
+    }
+
     axs[0].plot(df_test_joined.measurement)
     axs[0].plot(df_test_joined.index, df_test_joined.prediction, linestyle='dashed')
     axs[0].fill_between(df_test_joined.index, df_test_joined.lower_confidence,
@@ -172,6 +180,9 @@ def plot_historical_and_predictions_and_mobility(model_results, mobility_data, p
 
     axs[2].set_xlabel(f'Time')
     axs[2].set_xticks(range(0, 24, 3), ['2020 Jan', 'Apr', 'Jul', 'Oct', '2021 Jan', 'Apr', 'Jul', 'Oct'])
+
+    axs[2].text(16, -35, f'Correlation between diff and driving {corr["mobility_driving"]:.2f}', color=colors[0])
+    axs[2].text(16, -50, f'Correlation between diff and walking {corr["mobility_walking"]:.2f}', color=colors[1])
 
     return fig, axs
 
