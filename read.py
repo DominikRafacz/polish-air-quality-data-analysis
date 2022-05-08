@@ -27,8 +27,13 @@ def _read_normalized_data(year: int, pollutant: str, exposition: int, on_nonexis
     read_excel_function = _match_read_function(year, pollutant, exposition)
 
     data = read_excel_function(io=file_name)
+
     data.columns.values[0] = 'timestamp'
     data = data.melt(id_vars=['timestamp'], var_name='station_code', value_name='measurement')
+
+    # remove the first observation from new year
+    if year == 2021 and exposition == 1:
+        data = data[data.timestamp.dt.year != 2022]
 
     if pollutant == 'CO':
         data['measurement'] = data['measurement'] * 1000
