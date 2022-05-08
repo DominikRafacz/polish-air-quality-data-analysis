@@ -95,7 +95,7 @@ def plot_timeline_of_pollution_for_regions(regional_data, regions, focus_region_
     ax.set_xticks(*generate_ticks(data))
     ax.set_ylabel(f'Average concentration of {pollution} in the air [μg/m³]')
 
-    plt.show()
+    return fig, ax
 
 
 @with_theme_and_params
